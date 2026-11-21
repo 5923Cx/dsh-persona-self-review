@@ -1,0 +1,6 @@
+# dsh-persona-self-review bundle patch.
+# 一行 Host 插件：角色卡的存储、注入、工具与 HTTP 接口都由它提供。
+- insert:
+    - id: persona-self-review
+      name: dsh-persona-self-review
+      config: {}

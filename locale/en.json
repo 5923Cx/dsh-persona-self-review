@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Persona card · Self review",
+    "description": "Keeps your persona in an editable card under the DSH home directory and injects it per session. A review session started on a schedule reads memory through the normal session context, proposes small edits, applies auto-approved ones after a delay, and archives every version to a backup folder. Injecting a review needs the GUI open; skipped runs are not caught up later."
+  }
+}

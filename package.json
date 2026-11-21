@@ -1,0 +1,57 @@
+{
+  "name": "dsh-persona-self-review",
+  "version": "0.2.0",
+  "private": true,
+  "description": "角色卡 · 自我审视：文件化角色卡、按会话注入、定期自我审视与延迟替换。",
+  "type": "module",
+  "license": "MIT",
+  "author": "5923Cx",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/5923Cx/dsh-persona-self-review.git"
+  },
+  "homepage": "https://github.com/5923Cx/dsh-persona-self-review#readme",
+  "bugs": {
+    "url": "https://github.com/5923Cx/dsh-persona-self-review/issues"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "persona",
+    "character-card",
+    "system-prompt"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "lib",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-ui-workspace"
+      ]
+    }
+  }
+}
