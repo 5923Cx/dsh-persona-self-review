@@ -1,4 +1,5 @@
-# dsh-persona-self-review
+# dsh-persona-self-review 
+如果插件出了什么问题，或者什么功能不足需要修改、增加，请麻烦自己家的大肥鱼，作者是个只会搓点vb小窗口，乱提要求，压力自己家大肥鱼的F5~5555 QwQ
 
 > 角色卡 · 自我审视：把「人格」从 agent preset 里拿出来，做成一份你能读、能改、能备份、也能缓慢演化的角色卡。
 
@@ -134,3 +135,19 @@ dsh plugin add "file:/path/to/dsh-persona-self-review.tgz"
 - `$DSH_HOME/persona-card/cards/<cardN>.md` 各卡正文，`<cardN>.meta.json` 版本与当日计数
 - `$DSH_HOME/persona-card/state.json` 设置、暂存、延迟队列、整理次数
 - 备份默认 `~/Documents/dsh角色卡备份`，可在设置里改，带「选择文件夹」「打开文件夹」
+
+### 侧栏入口
+![侧栏入口](docs/images/04-sidebar.png)
+
+### 角色卡
+![角色卡页](docs/images/01-card-tab.png)
+
+### 自我审视
+![自我审视页](docs/images/02-self-review.png)
+
+### 设置
+![设置页](docs/images/03-settings.png)
+
+
+
+
