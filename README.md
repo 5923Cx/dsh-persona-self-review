@@ -137,16 +137,16 @@ dsh plugin add "file:/path/to/dsh-persona-self-review.tgz"
 - 备份默认 `~/Documents/dsh角色卡备份`，可在设置里改，带「选择文件夹」「打开文件夹」
 
 ### 侧栏入口
-![侧栏入口](docs/images/04-sidebar.png)
+![侧栏入口](/images/04-sidebar.png)
 
 ### 角色卡
-![角色卡页](docs/images/01-card-tab.png)
+![角色卡页](/images/01-card-tab.png)
 
 ### 自我审视
-![自我审视页](docs/images/02-self-review.png)
+![自我审视页](/images/02-self-review.png)
 
 ### 设置
-![设置页](docs/images/03-settings.png)
+![设置页](/images/03-settings.png)
 
 
 
