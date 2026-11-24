@@ -235,6 +235,54 @@ test('备份统计返回数量与字节', () => {
   assert.ok(stats.bytes > 0)
 })
 
+test('关闭自动审视后不产生、也会清掉错过提示', () => {
+  const store = new CardStore()
+  const service = createService({ store })
+  store.saveSettings({ reviewEnabled: false, intervalDays: 1, graceHours: 0 })
+  const state = store.state()
+  state.missedAt = 123
+  state.nextDueAt = Date.now() - 10 * 3600e3
+  store.saveState(state)
+
+  assert.equal(service.checkMissed(), false)
+  assert.equal(store.state().missedAt, 0)
+  assert.equal(store.state().nextDueAt, 0)
+})
+
+test('点掉错过提示会清除 missedAt', () => {
+  const store = new CardStore()
+  const service = createService({ store })
+  const state = store.state()
+  state.missedAt = 999
+  store.saveState(state)
+
+  service.dismissMissed()
+  assert.equal(store.state().missedAt, 0)
+})
+
+test('关闭自动审视开关时清掉错过与下次时间', () => {
+  const store = new CardStore()
+  const service = createService({ store })
+  store.saveSettings({ reviewEnabled: true })
+  const state = store.state()
+  state.missedAt = 456
+  state.nextDueAt = Date.now() + 3600e3
+  store.saveState(state)
+
+  service.saveSettings({ reviewEnabled: false })
+  assert.equal(store.state().missedAt, 0)
+  assert.equal(store.state().nextDueAt, 0)
+})
+
+test('一次性提示可以被消费掉', () => {
+  const store = new CardStore()
+  const service = createService({ store })
+  service.notify('测试提示')
+  assert.equal(store.state().notice.text, '测试提示')
+  service.clearNotice()
+  assert.equal(store.state().notice, null)
+})
+
 test('全新安装只有一张只读的系统默认卡', () => {
   const previous = process.env.DSH_HOME
   const freshHome = mkdtempSync(join(tmpdir(), 'persona-card-fresh-'))

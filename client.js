@@ -111,7 +111,7 @@ window.__ModuleLoader__.load({
 
     function Icon() {
       const { state } = useRemote(5000)
-      const alert = Boolean(state && (state.pending || state.delayedApply || state.missedAt))
+      const alert = Boolean(state && (state.pending || state.delayedApply || (state.settings?.reviewEnabled && state.missedAt)))
       return h('span', { style: { position: 'relative', display: 'inline-flex' } },
         h('svg', { viewBox: '0 0 24 24', width: 20, height: 20, 'aria-hidden': true },
           h('rect', { x: 3, y: 4, width: 18, height: 16, rx: 3, fill: 'none', stroke: 'currentColor', strokeWidth: 1.6 }),
@@ -312,7 +312,7 @@ window.__ModuleLoader__.load({
       const delayed = state?.delayedApply
       const statusLine = delayed
         ? `将在 ${fmtTime(delayed.applyAt)} 应用 v${delayed.version}`
-        : state?.missedAt
+        : (state?.settings?.reviewEnabled && state?.missedAt)
           ? `本轮自我审视已错过（${fmtTime(state.missedAt)}），不会补跑。`
           : validation
             ? (validation.ok
@@ -320,8 +320,20 @@ window.__ModuleLoader__.load({
               : `未通过校验：${validation.code}${validation.warnings?.length ? ' / ' + validation.warnings.join(', ') : ''}`)
             : '暂无审视结果。'
 
+      const dismissMissed = async () => {
+        try { await api('/api/missed-dismiss', { method: 'POST' }) } catch { /* ignore */ }
+        reload()
+      }
+
       return h('div', { style: { display: 'grid', gap: 10 } },
-        h('div', { style: { fontSize: 12, color: validation && !validation.ok ? tone.warn : tone.sub } }, statusLine),
+        h('div', { style: { display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' } },
+          h('div', { style: { fontSize: 12, color: validation && !validation.ok ? tone.warn : tone.sub } }, statusLine),
+          (state?.settings?.reviewEnabled && state?.missedAt)
+            ? h('button', {
+              onClick: dismissMissed,
+              style: { fontSize: 12, padding: '2px 8px', borderRadius: 6, border: `1px solid ${tone.line}`, background: tone.bg, color: tone.sub, cursor: 'pointer' },
+            }, '知道了')
+            : null),
         area({
           value: draft,
           onChange: e => setDraft(e.target.value),
@@ -400,6 +412,10 @@ window.__ModuleLoader__.load({
         if (e.target.type === 'checkbox') persist(next)
       }
       const blur = () => persist(formRef.current)
+      const dismissMissed = async () => {
+        try { await api('/api/missed-dismiss', { method: 'POST' }) } catch { /* ignore */ }
+        reload()
+      }
 
       const pickFolder = async () => {
         setMessage('正在打开文件夹选择器…')
@@ -460,7 +476,13 @@ window.__ModuleLoader__.load({
           area({ value: promptText, onChange: set('reviewPrompt'), onBlur: blur, style: { minHeight: 200 }, spellCheck: false })),
         h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
           h('span', { style: { fontSize: 12, color: tone.sub } }, `已整理 ${state?.reviewCount ?? 0} 次`),
-          state?.missedAt ? h('span', { style: { fontSize: 12, color: tone.danger } }, `上一轮自我审视已错过：${fmtTime(state.missedAt)}`) : null,
+          (state?.settings?.reviewEnabled && state?.missedAt)
+            ? h('button', {
+              onClick: dismissMissed,
+              title: '点一次即可清除这个提示',
+              style: { fontSize: 12, color: tone.danger, padding: '2px 8px', borderRadius: 6, border: `1px solid ${tone.line}`, background: tone.bg, cursor: 'pointer' },
+            }, `上一轮自我审视已错过：${fmtTime(state.missedAt)}（点此清除）`)
+            : null,
           message ? h('span', { style: { fontSize: 12, color: tone.sub } }, message) : null))
     }
 
@@ -629,6 +651,13 @@ window.__ModuleLoader__.load({
       const notice = state?.notice
       const [noticeSeen, setNoticeSeen] = React.useState(0)
       React.useEffect(() => { setNoticeSeen(0) }, [notice?.at])
+      // 一次性的设置报告不该在下次启动时复读：超过两分钟的直接清掉。
+      React.useEffect(() => {
+        if (!notice?.at) return
+        if (Date.now() - notice.at > 120000) {
+          api('/api/notice-clear', { method: 'POST' }).catch(() => {})
+        }
+      }, [notice?.at])
 
       const reminder = state?.backupReminder
       const [reminderHidden, setReminderHidden] = React.useState(0)
@@ -639,7 +668,7 @@ window.__ModuleLoader__.load({
       const [dismissed, setDismissed] = React.useState(false)
       React.useEffect(() => { setDismissed(false) }, [stamp])
 
-      if (notice && notice.at && notice.at !== noticeSeen) {
+      if (notice && notice.at && notice.at !== noticeSeen && Date.now() - notice.at <= 120000) {
         return h('div', {
           style: {
             position: 'fixed', right: 16, bottom: 16, width: 340, zIndex: 20003,
@@ -651,7 +680,11 @@ window.__ModuleLoader__.load({
           h('div', { style: { fontSize: 13, fontWeight: 600 } }, '设置已更新'),
           h('div', { style: { fontSize: 12, color: tone.sub, whiteSpace: 'pre-wrap', lineHeight: 1.7 } }, notice.text),
           h('div', { style: { display: 'flex', justifyContent: 'flex-end' } },
-            btn('知道了', () => setNoticeSeen(notice.at), { primary: true })))
+            btn('知道了', () => {
+              setNoticeSeen(notice.at)
+              api('/api/notice-clear', { method: 'POST' }).catch(() => {})
+              reload()
+            }, { primary: true })))
       }
 
       if (reminder && reminder.at && reminder.at !== reminderHidden) {
