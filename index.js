@@ -14,7 +14,7 @@ import { registerTools } from './lib/tools.js'
 import { registerRoutes } from './lib/routes.js'
 
 export const name = 'persona-self-review'
-export const inject = ['webServer', 'tools']
+export const inject = ['webServer', 'tools', 'connection']
 
 export function apply(ctx, config = {}) {
   const store = new CardStore()

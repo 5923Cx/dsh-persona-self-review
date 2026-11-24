@@ -1,6 +1,6 @@
 {
   "name": "dsh-persona-self-review",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "private": true,
   "description": "角色卡 · 自我审视：文件化角色卡、按会话注入、定期自我审视与延迟替换。",
   "type": "module",

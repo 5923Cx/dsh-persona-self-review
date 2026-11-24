@@ -36,6 +36,7 @@ function makeCtx() {
       },
     },
     webServer: { register(options) { routes.push(options); return () => {} } },
+    connection: { requestRejection: () => undefined },
   }
   return { ctx, tools, routes, handlers, services }
 }
@@ -98,6 +99,25 @@ test('POST 缺少自定义头时拒绝（防跨站写入）', async () => {
   })
   assert.equal(result.status, 403)
   assert.equal(result.body.error, 'forbidden')
+})
+
+test('DSH 的 Host/Origin 校验会拦下不可信请求', async () => {
+  const { ctx, routes } = makeCtx()
+  ctx.connection = { requestRejection: () => 403 }
+  apply(ctx, {})
+  const handler = routes[0].handler
+  const result = await new Promise(resolve => {
+    const req = { method: 'GET', url: '/persona-card/api/state', headers: {}, on() {} }
+    const res = {
+      statusCode: 200,
+      headersSent: false,
+      setHeader() {},
+      end(text) { resolve({ status: this.statusCode, body: text || '' }) },
+    }
+    handler(req, res)
+  })
+  assert.equal(result.status, 403)
+  assert.equal(result.body, '')
 })
 
 test('HTTP 路由：state / settings / clear', async () => {
